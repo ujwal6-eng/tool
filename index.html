@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Miniverse Tool</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap">
+    <style>
+        body { font-family: 'Roboto', sans-serif; margin:0; background:#f8f9fa; color:#222;}
+        header { background:#222; color:#fff; padding:1rem 2rem; text-align:center;}
+        nav { background:#333; color:#fff; display:flex; flex-wrap:wrap; justify-content:center;}
+        nav a { color:#fff; text-decoration:none; padding:1rem; display:block;}
+        nav a:hover { background:#444;}
+        main { max-width:1200px; margin:2rem auto; padding:1rem;}
+        section { background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.07); margin-bottom:2rem; padding:2rem;}
+        h2 { margin-top:0;}
+        .tool-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:2rem;}
+        .footer { background:#222; color:#fff; text-align:center; padding:2rem 1rem;}
+        .modal { display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:1000;}
+        .modal-content { background:#fff; padding:2rem; border-radius:8px; max-width:600px; width:90vw;}
+        .close { float:right; cursor:pointer; font-size:1.5rem;}
+        @media (max-width:600px) {
+            nav { flex-direction:column;}
+            .tool-grid { grid-template-columns:1fr;}
+            section { padding:1rem;}
+        }
+        .input-group { margin-bottom:1rem;}
+        label { display:block; margin-bottom:0.5rem;}
+        input[type="file"], input[type="range"], input[type="color"], input[type="text"], select { width:100%; padding:0.5rem;}
+        button { background:#007bff; color:#fff; border:none; padding:0.7rem 1.5rem; border-radius:4px; cursor:pointer;}
+        button:hover { background:#0056b3;}
+        canvas { max-width:100%; border:1px solid #ddd; border-radius:4px;}
+        .output-img { max-width:100%; margin-top:1rem;}
+        .color-box { width:40px; height:40px; border:1px solid #ccc; display:inline-block; vertical-align:middle;}
+        .shadow-preview { width:100px; height:100px; background:#eee; margin-top:1rem; border-radius:8px;}
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Miniverse Tool</h1>
+        <p>All-in-one online image tools</p>
+    </header>
+    <nav>
+        <a href="#format-converter">Format Converter</a>
+        <a href="#resizer">Resizer</a>
+        <a href="#compressor">Compressor</a>
+        <a href="#cropper">Cropper</a>
+        <a href="#rotator">Rotator & Flipper</a>
+        <a href="#metadata">Metadata Viewer</a>
+        <a href="#filters">Filters</a>
+        <a href="#adjust">Adjust</a>
+        <a href="#color-picker">Color Picker</a>
+        <a href="#bg-remover">Background Remover</a>
+        <a href="#meme">Meme Generator</a>
+        <a href="#collage">Collage Maker</a>
+        <a href="#watermark">Watermark Adder</a>
+        <a href="#thumbnail">Thumbnail Generator</a>
+        <a href="#pixel-art">Pixel Art Creator</a>
+        <a href="#box-shadow">Box Shadow Generator</a>
+        <a href="#patch">Patch Image Tool</a>
+        <a href="#" onclick="showModal('privacy')">Privacy Policy</a>
+        <a href="#" onclick="showModal('terms')">Terms & Conditions</a>
+    </nav>
+    <main>
+        <div class="tool-grid">
+            <!-- Image Format Converter -->
+            <section id="format-converter">
+                <h2>Image Format Converter</h2>
+                <div class="input-group">
+                    <label>Upload Image</label>
+                    <input type="file" id="formatInput" accept="image/*">
+                </div>
+                <div class="input-group">
+                    <label>Convert to</label>
+                    <select id="formatSelect">
+                        <option value="png">PNG</option>
+                        <option value="jpeg">JPEG</option>
+                        <option value="webp">WEBP</option>
+                        <option value="bmp">BMP</option>
+                    </select>
+                </div>
+                <button onclick="convertFormat()">Convert & Download</button>
+                <canvas id="formatCanvas" style="display:none;"></canvas>
+            </section>
+            <!-- Image Resizer -->
+            <section id="resizer">
+                <h2>Image Resizer / Dimensions Changer</h2>
+                <div class="input-group">
+                    <label>Upload Image</label>
+                    <input type="file" id="resizeInput" accept="image/*">
+                </div>
+                <div class="input-group">
+                    <label>Width</label>
+                    <input type="number" id="resizeWidth" min="1" value="300">
+                </div>
+                <div class="input-group">
+                    <label>Height</label>
+                    <input type="number" id="resizeHeight" min="1" value="300">
+                </div>
+                <button onclick="resizeImage()">Resize & Download</button>
+                <canvas id="resizeCanvas" style="display:none;"></canvas>
+            </section>
+            <!-- Image Compressor -->
+            <section id="compressor">
+                <h2>Image Compressor</h2>
+                <div class="input-group">
+                    <label>Upload Image</label>
+                    <input type="file" id="compressInput" accept="image/*">
+                </div>
+                <div class="input-group">
+                    <label>Quality (0.1 - 1)</label>
+                    <input type="range" id="compressQuality" min="0.1" max="1" step="0.01" value="0.7">
+                </div>
+                <button onclick="compressImage()">Compress & Download</button>
+                <canvas id="compressCanvas" style="display:none;"></canvas>
+            </section>
+            <!-- Image Cropper -->
+            <section id="cropper">
+                <h2>Image Cropper</h2>
+                <div class="input-group">
+                    <label>Upload Image</label>
+                    <input type="file" id="cropInput" accept="image/*">
+                </div>
+                <div class="input-group">
+                    <label>X</label>
+                    <input type="number" id="cropX" min="0" value="0">
+                </div>
+                <div class="input-group">
+                    <label>Y</label>
+                    <input type="number" id="cropY" min="0" value="0">
+                </div>
+                <div class="input-group">
+                    <label>Width</label>
+                    <input type="number" id="cropW" min="1" value="100">
+                </div>
+                <div class="input-group">
+                    <label>Height</label>
+                    <input type="number" id="cropH" min="1" value="100">
+                </div>
+                <button onclick="cropImage()">Crop & Download</button>
+                <canvas id="cropCanvas" style="display:none;"></canvas>
+            </section>
+            <!-- Image Rotator & Flipper -->
+            <section id="rotator">
+                <h2>Image Rotator & Flipper</h2>
+                <div class="input-group">
+                    <label>Upload Image</label>
+                    <input type="file" id="rotateInput" accept="image/*">
+                </div>
+                <div class="input-group">
+                    <label>Rotate (degrees)</label>
+                    <input type="number" id="rotateDeg" value="90">
+                </div>
+                <div class="input-group">
+                    <label>Flip</label>
+                    <select id="flipSelect">
+                        <option value="none">None</option>
+                        <option value="horizontal">Horizontal</option>
+                        <option value="vertical">Vertical</option>
+                    </select>
+                </div>
+                <button onclick="rotateFlipImage()">Rotate/Flip & Download</button>
+                <canvas id="rotateCanvas" style="display:none;"></canvas>
+            </section>
+            <!-- Image Metadata Viewer -->
+            <section id="metadata">
+                <h2>Image Metadata Viewer (Exif Reader)</h2>
+                <div class="input-group">
+                    <label>Upload Image</label>
+                    <input type="file" id="metaInput" accept="image/*">
+                </div>
+                <button onclick="viewMetadata()">View Metadata</button>
+                <pre id="metaOutput"></pre>
+            </section>
+            <!-- Image Filter Applier -->
+            <section id="filters">
+                <h2>Image Filter Applier</h2>
+                <div class="input-group">
+                    <label>Upload Image</label>
+                    <input type="file" id="filterInput" accept="image/*">
+                </div>
+                <div class="input-group">
+                    <label>Filter</label>
+                    <select id="filterSelect">
+                        <option value="none">None</option>
+                        <option value="grayscale(1)">Grayscale</option>
+                        <option value="sepia(1)">Sepia</option>
+                        <option value="invert(1)">Invert</option>
+                        <option value="blur(3px)">Blur</option>
+                        <option value="contrast(2)">High Contrast</option>
+                        <option value="brightness(1.5)">Bright</option>
+                        <option value="saturate(2)">Saturated</option>
+                    </select>
+                </div>
+                <button onclick="applyFilter()">Apply & Download</button>
+                <canvas id="filterCanvas" style="display:none;"></canvas>
+            </section>
+            <!-- Brightness, Contrast, Saturation Adjuster -->
+            <section id="adjust">
+                <h2>Brightness, Contrast, Saturation Adjuster</h2>
+                <div class="input-group">
+                    <label>Upload Image</label>
+                    <input type="file" id="adjustInput" accept="image/*">
+                </div>
+                <div class="input-group">
+                    <label>Brightness</label>
+                    <input type="range" id="brightness" min="0" max="2" step="0.01" value="1">
+                </div>
+                <div class="input-group">
+                    <label>Contrast</label>
+                    <input type="range" id="contrast" min="0" max="2" step="0.01" value="1">
+                </div>
+                <div class="input-group">
+                    <label>Saturation</label>
+                    <input type="range" id="saturate" min="0" max="2" step="0.01" value="1">
+                </div>
+                <button onclick="adjustImage()">Adjust & Download</button>
+                <canvas id="adjustCanvas" style="display:none;"></canvas>
+            </section>
+            <!-- Color Picker / Eyedropper Tool -->
+            <section id="color-picker">
+                <h2>Color Picker / Eyedropper Tool</h2>
+                <div class="input-group">
+                    <label>Upload Image</label>
+                    <input type="file" id="colorInput" accept="image/*">
+                </div>
+                <canvas id="colorCanvas" style="display:none;cursor:crosshair;"></canvas>
+                <div>
+                    <span id="pickedColor"></span>
+                    <span class="color-box" id="colorBox"></span>
+                </div>
+            </section>
+            <!-- Background Remover (Basic) -->
+            <section id="bg-remover">
+                <h2>Background Remover (Basic)</h2>
+                <div class="input-group">
+                    <label>Upload Image</label>
+                    <input type="file" id="bgInput" accept="image/*">
+                </div>
+                <button onclick="removeBg()">Remove Background & Download</button>
+                <canvas id="bgCanvas" style="display:none;"></canvas>
+            </section>
+            <!-- Meme Generator -->
+            <section id="meme">
+                <h2>Meme Generator</h2>
+                <div class="input-group">
+                    <label>Upload Image</label>
+                    <input type="file" id="memeInput" accept="image/*">
+                </div>
+                <div class="input-group">
+                    <label>Top Text</label>
+                    <input type="text" id="memeTop" placeholder="Top text">
+                </div>
+                <div class="input-group">
+                    <label>Bottom Text</label>
+                    <input type="text" id="memeBottom" placeholder="Bottom text">
+                </div>
+                <button onclick="generateMeme()">Generate & Download</button>
+                <canvas id="memeCanvas" style="display:none;"></canvas>
+            </section>
+            <!-- Collage Maker -->
+            <section id="collage">
+                <h2>Collage Maker</h2>
+                <div class="input-group">
+                    <label>Upload Images (max 4)</label>
+                    <input type="file" id="collageInput" accept="image/*" multiple>
+                </div>
+                <button onclick="makeCollage()">Make Collage & Download</button>
+                <canvas id="collageCanvas" style="display:none;"></canvas>
+            </section>
+            <!-- Watermark Adder -->
+            <section id="watermark">
+                <h2>Watermark Adder</h2>
+                <div class="input-group">
+                    <label>Upload Image</label>
+                    <input type="file" id="watermarkInput" accept="image/*">
+                </div>
+                <div class="input-group">
+                    <label>Watermark Text</label>
+                    <input type="text" id="watermarkText" placeholder="Watermark">
+                </div>
+                <button onclick="addWatermark()">Add Watermark & Download</button>
+                <canvas id="watermarkCanvas" style="display:none;"></canvas>
+            </section>
+            <!-- Thumbnail Generator -->
+            <section id="thumbnail">
+                <h2>Thumbnail Generator</h2>
+                <div class="input-group">
+                    <label>Upload Image</label>
+                    <input type="file" id="thumbInput" accept="image/*">
+                </div>
+                <div class="input-group">
+                    <label>Size</label>
+                    <select id="thumbSize">
+                        <option value="128">128x128</option>
+                        <option value="256">256x256</option>
+                        <option value="512">512x512</option>
+                    </select>
+                </div>
+                <button onclick="generateThumbnail()">Generate & Download</button>
+                <canvas id="thumbCanvas" style="display:none;"></canvas>
+            </section>
+            <!-- Pixel Art Creator / Downscaler -->
+            <section id="pixel-art">
+                <h2>Pixel Art Creator / Downscaler</h2>
+                <div class="input-group">
+                    <label>Upload Image</label>
+                    <input type="file" id="pixelInput" accept="image/*">
+                </div>
+                <div class="input-group">
+                    <label>Pixel Size</label>
+                    <input type="number" id="pixelSize" min="2" max="32" value="8">
+                </div>
+                <button onclick="createPixelArt()">Create & Download</button>
+                <canvas id="pixelCanvas" style="display:none;"></canvas>
+            </section>
+            <!-- CSS Box Shadow Generator -->
+            <section id="box-shadow">
+                <h2>CSS Box Shadow Generator</h2>
+                <div class="input-group">
+                    <label>Horizontal Offset</label>
+                    <input type="number" id="shadowX" value="5">
+                </div>
+                <div class="input-group">
+                    <label>Vertical Offset</label>
+                    <input type="number" id="shadowY" value="5">
+                </div>
+                <div class="input-group">
+                    <label>Blur Radius</label>
+                    <input type="number" id="shadowBlur" value="10">
+                </div>
+                <div class="input-group">
+                    <label>Shadow Color</label>
+                    <input type="color" id="shadowColor" value="#000000">
+                </div>
+                <button onclick="generateBoxShadow()">Generate CSS</button>
+                <div class="shadow-preview" id="shadowPreview"></div>
+                <pre id="shadowCSS"></pre>
+            </section>
+            <!-- Patch Image Tool -->
+            <section id="patch">
+                <h2>Patch Image Tool</h2>
+                <div class="input-group">
+                    <label>Upload Image</label>
+                    <input type="file" id="patchInput" accept="image/*">
+                </div>
+                <div class="input-group">
+                    <label>X</label>
+                    <input type="number" id="patchX" min="0" value="0">
+                </div>
+                <div class="input-group">
+                    <label>Y</label>
+                    <input type="number" id="patchY" min="0" value="0">
+                </div>
+                <div class="input-group">
+                    <label>Width</label>
+                    <input type="number" id="patchW" min="1" value="50">
+                </div>
+                <div class="input-group">
+                    <label>Height</label>
+                    <input type="number" id="patchH" min="1" value="50">
+                </div>
+                <button onclick="patchImage()">Patch & Download</button>
+                <canvas id="patchCanvas" style="display:none;"></canvas>
+            </section>
+        </div>
+    </main>
+    <div class="footer">
+        <p>&copy; 2024 Miniverse Tool. All rights reserved.</p>
+        <p>
+            <a href="#" style="color:#fff;text-decoration:underline;" onclick="showModal('privacy')">Privacy Policy</a> |
+            <a href="#" style="color:#fff;text-decoration:underline;" onclick="showModal('terms')">Terms & Conditions</a>
+        </p>
+    </div>
+    <!-- Modal for Privacy Policy and Terms -->
+    <div class="modal" id="privacyModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('privacy')">&times;</span>
+            <h2>Privacy Policy</h2>
+            <p>Miniverse Tool does not store or share your images. All processing is done locally in your browser. We do not collect any personal data.</p>
+        </div>
+    </div>
+    <div class="modal" id="termsModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('terms')">&times;</span>
+            <h2>Terms & Conditions</h2>
+            <p>By using Miniverse Tool, you agree to use it for lawful purposes only. We provide no warranty and are not responsible for any loss or damage resulting from use.</p>
+        </div>
+    </div>
+    <!-- JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+    <script>
+        // Modal logic
+        function showModal(type) {
+            document.getElementById(type+'Modal').style.display='flex';
+        }
+        function closeModal(type) {
+            document.getElementById(type+'Modal').style.display='none';
+        }
+
+        // Helper: download canvas as image
+        function downloadCanvas(canvas, filename, type='image/png', quality=1) {
+            let link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL(type, quality);
+            link.click();
+        }
+
+        // Format Converter
+        let formatImg = new Image();
+        document.getElementById('formatInput').onchange = function(e){
+            let file = e.target.files[0];
+            if(!file) return;
+            let reader = new FileReader();
+            reader.onload = function(ev){
+                formatImg.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+        function convertFormat(){
+            let format = document.getElementById('formatSelect').value;
+            let canvas = document.getElementById('formatCanvas');
+            canvas.width = formatImg.width;
+            canvas.height = formatImg.height;
+            let ctx = canvas.getContext('2d');
+            ctx.drawImage(formatImg,0,0);
+            let mime = 'image/'+format;
+            downloadCanvas(canvas, 'converted.'+format, mime, 1);
+        }
+
+        // Resizer
+        let resizeImg = new Image();
+        document.getElementById('resizeInput').onchange = function(e){
+            let file = e.target.files[0];
+            if(!file) return;
+            let reader = new FileReader();
+            reader.onload = function(ev){
+                resizeImg.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+        function resizeImage(){
+            let w = parseInt(document.getElementById('resizeWidth').value);
+            let h = parseInt(document.getElementById('resizeHeight').value);
+            let canvas = document.getElementById('resizeCanvas');
+            canvas.width = w;
+            canvas.height = h;
+            let ctx = canvas.getContext('2d');
+            ctx.drawImage(resizeImg,0,0,w,h);
+            downloadCanvas(canvas, 'resized.png');
+        }
+
+        // Compressor
+        let compressImg = new Image();
+        document.getElementById('compressInput').onchange = function(e){
+            let file = e.target.files[0];
+            if(!file) return;
+            let reader = new FileReader();
+            reader.onload = function(ev){
+                compressImg.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+        function compressImage(){
+            let quality = parseFloat(document.getElementById('compressQuality').value);
+            let canvas = document.getElementById('compressCanvas');
+            canvas.width = compressImg.width;
+            canvas.height = compressImg.height;
+            let ctx = canvas.getContext('2d');
+            ctx.drawImage(compressImg,0,0);
+            downloadCanvas(canvas, 'compressed.jpg', 'image/jpeg', quality);
+        }
+
+        // Cropper
+        let cropImg = new Image();
+        document.getElementById('cropInput').onchange = function(e){
+            let file = e.target.files[0];
+            if(!file) return;
+            let reader = new FileReader();
+            reader.onload = function(ev){
+                cropImg.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+        function cropImage(){
+            let x = parseInt(document.getElementById('cropX').value);
+            let y = parseInt(document.getElementById('cropY').value);
+            let w = parseInt(document.getElementById('cropW').value);
+            let h = parseInt(document.getElementById('cropH').value);
+            let canvas = document.getElementById('cropCanvas');
+            canvas.width = w;
+            canvas.height = h;
+            let ctx = canvas.getContext('2d');
+            ctx.drawImage(cropImg,x,y,w,h,0,0,w,h);
+            downloadCanvas(canvas, 'cropped.png');
+        }
+
+        // Rotator & Flipper
+        let rotateImg = new Image();
+        document.getElementById('rotateInput').onchange = function(e){
+            let file = e.target.files[0];
+            if(!file) return;
+            let reader = new FileReader();
+            reader.onload = function(ev){
+                rotateImg.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+        function rotateFlipImage(){
+            let deg = parseInt(document.getElementById('rotateDeg').value);
+            let flip = document.getElementById('flipSelect').value;
+            let canvas = document.getElementById('rotateCanvas');
+            let w = rotateImg.width, h = rotateImg.height;
+            if(deg%180!==0){canvas.width=h;canvas.height=w;}else{canvas.width=w;canvas.height=h;}
+            let ctx = canvas.getContext('2d');
+            ctx.save();
+            if(flip==='horizontal'){ctx.translate(canvas.width,0);ctx.scale(-1,1);}
+            if(flip==='vertical'){ctx.translate(0,canvas.height);ctx.scale(1,-1);}
+            ctx.translate(canvas.width/2,canvas.height/2);
+            ctx.rotate(deg*Math.PI/180);
+            ctx.drawImage(rotateImg,-w/2,-h/2);
+            ctx.restore();
+            downloadCanvas(canvas, 'rotated.png');
+        }
+
+        // Metadata Viewer
+        document.getElementById('metaInput').onchange = function(e){
+            let file = e.target.files[0];
+            if(!file) return;
+            window.metaFile = file;
+        };
+        function viewMetadata(){
+            let file = window.metaFile;
+            if(!file) return;
+            EXIF.getData(file, function(){
+                let meta = EXIF.getAllTags(this);
+                document.getElementById('metaOutput').textContent = JSON.stringify(meta,null,2);
+            });
+        }
+
+        // Filter Applier
+        let filterImg = new Image();
+        document.getElementById('filterInput').onchange = function(e){
+            let file = e.target.files[0];
+            if(!file) return;
+            let reader = new FileReader();
+            reader.onload = function(ev){
+                filterImg.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+        function applyFilter(){
+            let filter = document.getElementById('filterSelect').value;
+            let canvas = document.getElementById('filterCanvas');
+            canvas.width = filterImg.width;
+            canvas.height = filterImg.height;
+            let ctx = canvas.getContext('2d');
+            ctx.filter = filter;
+            ctx.drawImage(filterImg,0,0);
+            downloadCanvas(canvas, 'filtered.png');
+        }
+
+        // Adjuster
+        let adjustImg = new Image();
+        document.getElementById('adjustInput').onchange = function(e){
+            let file = e.target.files[0];
+            if(!file) return;
+            let reader = new FileReader();
+            reader.onload = function(ev){
+                adjustImg.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+        function adjustImage(){
+            let brightness = document.getElementById('brightness').value;
+            let contrast = document.getElementById('contrast').value;
+            let saturate = document.getElementById('saturate').value;
+            let canvas = document.getElementById('adjustCanvas');
+            canvas.width = adjustImg.width;
+            canvas.height = adjustImg.height;
+            let ctx = canvas.getContext('2d');
+            ctx.filter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturate})`;
+            ctx.drawImage(adjustImg,0,0);
+            downloadCanvas(canvas, 'adjusted.png');
+        }
+
+        // Color Picker / Eyedropper
+        let colorImg = new Image();
+        document.getElementById('colorInput').onchange = function(e){
+            let file = e.target.files[0];
+            if(!file) return;
+            let reader = new FileReader();
+            reader.onload = function(ev){
+                colorImg.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+        colorImg.onload = function(){
+            let canvas = document.getElementById('colorCanvas');
+            canvas.style.display='block';
+            canvas.width = colorImg.width;
+            canvas.height = colorImg.height;
+            let ctx = canvas.getContext('2d');
+            ctx.drawImage(colorImg,0,0);
+        };
+        document.getElementById('colorCanvas').onclick = function(e){
+            let canvas = this;
+            let rect = canvas.getBoundingClientRect();
+            let x = Math.floor((e.clientX-rect.left)/rect.width*canvas.width);
+            let y = Math.floor((e.clientY-rect.top)/rect.height*canvas.height);
+            let ctx = canvas.getContext('2d');
+            let data = ctx.getImageData(x,y,1,1).data;
+            let hex = "#"+((1<<24)+(data[0]<<16)+(data[1]<<8)+data[2]).toString(16).slice(1);
+            document.getElementById('pickedColor').textContent = hex;
+            document.getElementById('colorBox').style.background = hex;
+        };
+
+        // Background Remover (Basic: white/near-white removal)
+        let bgImg = new Image();
+        document.getElementById('bgInput').onchange = function(e){
+            let file = e.target.files[0];
+            if(!file) return;
+            let reader = new FileReader();
+            reader.onload = function(ev){
+                bgImg.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+        function removeBg(){
+            let canvas = document.getElementById('bgCanvas');
+            canvas.width = bgImg.width;
+            canvas.height = bgImg.height;
+            let ctx = canvas.getContext('2d');
+            ctx.drawImage(bgImg,0,0);
+            let imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+            for(let i=0;i<imgData.data.length;i+=4){
+                let r=imgData.data[i],g=imgData.data[i+1],b=imgData.data[i+2];
+                if(r>220&&g>220&&b>220){imgData.data[i+3]=0;}
+            }
+            ctx.putImageData(imgData,0,0);
+            downloadCanvas(canvas, 'bg-removed.png');
+        }
+
+        // Meme Generator
+        let memeImg = new Image();
+        document.getElementById('memeInput').onchange = function(e){
+            let file = e.target.files[0];
+            if(!file) return;
+            let reader = new FileReader();
+            reader.onload = function(ev){
+                memeImg.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+        function generateMeme(){
+            let top = document.getElementById('memeTop').value;
+            let bottom = document.getElementById('memeBottom').value;
+            let canvas = document.getElementById('memeCanvas');
+            canvas.width = memeImg.width;
+            canvas.height = memeImg.height;
+            let ctx = canvas.getContext('2d');
+            ctx.drawImage(memeImg,0,0);
+            ctx.font = `bold ${Math.floor(canvas.height/10)}px Impact, Arial`;
+            ctx.textAlign = 'center';
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 4;
+            ctx.fillStyle = 'white';
+            ctx.textBaseline = 'top';
+            ctx.strokeText(top,canvas.width/2,10);
+            ctx.fillText(top,canvas.width/2,10);
+            ctx.textBaseline = 'bottom';
+            ctx.strokeText(bottom,canvas.width/2,canvas.height-10);
+            ctx.fillText(bottom,canvas.width/2,canvas.height-10);
+            downloadCanvas(canvas, 'meme.png');
+        }
+
+        // Collage Maker (max 4 images, 2x2 grid)
+        document.getElementById('collageInput').onchange = function(e){
+            window.collageFiles = Array.from(e.target.files).slice(0,4);
+        };
+        function makeCollage(){
+            let files = window.collageFiles;
+            if(!files||files.length===0) return;
+            let imgs = [];
+            let loaded = 0;
+            files.forEach((file,i)=>{
+                let reader = new FileReader();
+                reader.onload = function(ev){
+                    let img = new Image();
+                    img.onload = function(){
+                        imgs[i]=img;
+                        loaded++;
+                        if(loaded===files.length){
+                            let size = 256;
+                            let canvas = document.getElementById('collageCanvas');
+                            canvas.width = size*2;
+                            canvas.height = size*2;
+                            let ctx = canvas.getContext('2d');
+                            imgs.forEach((im,j)=>{
+                                let x = (j%2)*size, y = Math.floor(j/2)*size;
+                                ctx.drawImage(im,x,y,size,size);
+                            });
+                            downloadCanvas(canvas, 'collage.png');
+                        }
+                    };
+                    img.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Watermark Adder
+        let watermarkImg = new Image();
+        document.getElementById('watermarkInput').onchange = function(e){
+            let file = e.target.files[0];
+            if(!file) return;
+            let reader = new FileReader();
+            reader.onload = function(ev){
+                watermarkImg.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+        function addWatermark(){
+            let text = document.getElementById('watermarkText').value;
+            let canvas = document.getElementById('watermarkCanvas');
+            canvas.width = watermarkImg.width;
+            canvas.height = watermarkImg.height;
+            let ctx = canvas.getContext('2d');
+            ctx.drawImage(watermarkImg,0,0);
+            ctx.font = `bold ${Math.floor(canvas.height/20)}px Arial`;
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(text,canvas.width-10,canvas.height-10);
+            downloadCanvas(canvas, 'watermarked.png');
+        }
+
+        // Thumbnail Generator
+        let thumbImg = new Image();
+        document.getElementById('thumbInput').onchange = function(e){
+            let file = e.target.files[0];
+            if(!file) return;
+            let reader = new FileReader();
+            reader.onload = function(ev){
+                thumbImg.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+        function generateThumbnail(){
+            let size = parseInt(document.getElementById('thumbSize').value);
+            let canvas = document.getElementById('thumbCanvas');
+            canvas.width = size;
+            canvas.height = size;
+            let ctx = canvas.getContext('2d');
+            ctx.drawImage(thumbImg,0,0,size,size);
+            downloadCanvas(canvas, 'thumbnail.png');
+        }
+
+        // Pixel Art Creator / Downscaler
+        let pixelImg = new Image();
+        document.getElementById('pixelInput').onchange = function(e){
+            let file = e.target.files[0];
+            if(!file) return;
+            let reader = new FileReader();
+            reader.onload = function(ev){
+                pixelImg.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+        function createPixelArt(){
+            let pixelSize = parseInt(document.getElementById('pixelSize').value);
+            let w = pixelImg.width, h = pixelImg.height;
+            let canvas = document.getElementById('pixelCanvas');
+            canvas.width = w;
+            canvas.height = h;
+            let ctx = canvas.getContext('2d');
+            // Downscale
+            let tmp = document.createElement('canvas');
+            tmp.width = Math.ceil(w/pixelSize);
+            tmp.height = Math.ceil(h/pixelSize);
+            let tmpCtx = tmp.getContext('2d');
+            tmpCtx.drawImage(pixelImg,0,0,tmp.width,tmp.height);
+            // Upscale
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(tmp,0,0,canvas.width,canvas.height);
+            downloadCanvas(canvas, 'pixel-art.png');
+        }
+
+        // CSS Box Shadow Generator
+        function generateBoxShadow(){
+            let x = document.getElementById('shadowX').value;
+            let y = document.getElementById('shadowY').value;
+            let blur = document.getElementById('shadowBlur').value;
+            let color = document.getElementById('shadowColor').value;
+            let css = `box-shadow: ${x}px ${y}px ${blur}px ${color};`;
+            document.getElementById('shadowCSS').textContent = css;
+            document.getElementById('shadowPreview').style.boxShadow = `${x}px ${y}px ${blur}px ${color}`;
+        }
+
+        // Patch Image Tool (extract patch)
+        let patchImg = new Image();
+        document.getElementById('patchInput').onchange = function(e){
+            let file = e.target.files[0];
+            if(!file) return;
+            let reader = new FileReader();
+            reader.onload = function(ev){
+                patchImg.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+        function patchImage(){
+            let x = parseInt(document.getElementById('patchX').value);
+            let y = parseInt(document.getElementById('patchY').value);
+            let w = parseInt(document.getElementById('patchW').value);
+            let h = parseInt(document.getElementById('patchH').value);
+            let canvas = document.getElementById('patchCanvas');
+            canvas.width = w;
+            canvas.height = h;
+            let ctx = canvas.getContext('2d');
+            ctx.drawImage(patchImg,x,y,w,h,0,0,w,h);
+            downloadCanvas(canvas, 'patch.png');
+        }
+    </script>
+</body>
+</html>
